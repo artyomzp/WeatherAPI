@@ -3,9 +3,11 @@ import pandas as pd
 
 app = Flask(__name__)
 
+stations = pd.read_csv("data/stations.txt", skiprows=17)
+
 @app.route("/")
 def home():
-    return render_template("home.html")
+    return render_template("home.html", data=stations.to_html())
 
 @app.route("/api/v1/<station>/<date>")
 def get_weather(station, date):
@@ -16,6 +18,12 @@ def get_weather(station, date):
         "station": station,
         "date": date,
         "temperature":temperature}
+
+@app.route("/api/v1/<station>")
+def get_station_data(station):
+    filename = "data/TG_STAID" + str(station).zfill(6) + ".txt"
+    data = pd.read_csv(filename, skiprows=20, parse_dates=["    DATE"])
+    return data.to_dict(orient="records")
 
 if __name__ == "__main__":
     app.run(debug=True)
